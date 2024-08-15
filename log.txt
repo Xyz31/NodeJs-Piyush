@@ -1,0 +1,5 @@
+1723739470017 :path - /signup : New Request Recieved : Method : GET
+1723739487764 :path - /signup?pagination : New Request Recieved : Method : POST
+1723739498758 :path - /signup : New Request Recieved : Method : PUT
+1723739513847 :path - /signup : New Request Recieved : Method : DELETE
+1723739522621 :path - /signup : New Request Recieved : Method : PATCH
