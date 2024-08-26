@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "first_name": "Kashaf ulla",
+    "last_name": "khan",
+    "gender": "M"
+  },
+  {
+    "id": 3,
+    "first_name": "Dane",
+    "last_name": "Jane",
+    "gender": "F"
+  },
+  {
+    "id": 4,
+    "first_name": "Katerine",
+    "last_name": "Crossdale",
+    "gender": "F"
+  },
+  {
+    "id": 5,
+    "first_name": "Delaney",
+    "last_name": "Levermore",
+    "gender": "M"
+  },
+  {
+    "id": 6,
+    "first_name": "Denys",
+    "last_name": "Lemon",
+    "gender": "M"
+  },
+  {
+    "first_name": "kashaf",
+    "last_name": "khan",
+    "gender": "M",
+    "id": 7
+  },
+  {
+    "first_name": "kashaf 2",
+    "last_name": "khan",
+    "gender": "M",
+    "id": 7
+  },
+  {
+    "first_name": "kashaf 2",
+    "last_name": "khan",
+    "gender": "M",
+    "id": 8
+  }
+]

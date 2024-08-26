@@ -1,56 +1,112 @@
-const http = require('http')
-const fs = require("fs")
-const url = require("url")
+const express = require('express');
+const fs = require('fs').promises;
+const path = require('path');
 
-const port = process.env.port || 8000
+const app = express();
+const port = process.env.PORT || 8000;
 
-// Create a local server to receive data from
-const server = http.createServer((req, res) => {
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-  if(req.url ==="/favicon.ico") return res.end();
-  const myurl = url.parse(req.url,true);
-  console.log(myurl)
+// Data file path
+const DATA_FILE = path.join(__dirname, 'MOCK_DATA.json');
 
-  log = `${Date.now()} :path - ${req.url} : New Request Recieved : Method : ${req.method}\n`;
-  
-  fs.appendFile("log.txt", log, (err, data)=>{
-    switch(myurl.pathname)
-    {
-      case "/" : 
-      res.end("HomePage")
-      break
+// Helper function to read data
+async function readData() {
+  const data = await fs.readFile(DATA_FILE, 'utf8');
+  return JSON.parse(data);
+}
 
-      case "/about" :
-        const username = myurl.query.name
-        res.end(`Hello , ${username} from Server.`)
-        break
+// Helper function to write data
+async function writeData(data) {
+  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+}
 
-      case "/signup":
-        if(req.method === "GET") {
-          return res.end("Welcome to sign up!")
-        }
-        else if(req.method === "POST"){
-          // Put data to DB
-          return res.end("Data read and processing..");
-        }
-        else if(req.method === "DELETE"){
-          // Query and delete
-          return res.end("Successfully Deleted!");
-        }else{
-          return res.end("You called either PUT or PATCH.");
-        }
-        break;
+// REST API Routes
 
-      default :
-      res.end("404 Unknown Path")
-      break
+// Root route
+app.get('/', (req, res) => {
+  res.send("Welcome to our site.");
+});
+
+// Get all users
+app.get(['/users', '/api/users'], async (req, res) => {
+  try {
+    const usersdata = await readData();
+    res.json(usersdata);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to read data' });
+  }
+});
+
+// Get a single user by ID
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const usersdata = await readData();
+    const user = usersdata.find((user) => user.id === id);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: 'User not found' });
     }
-  })
-    
-  });
-  
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to read data' });
+  }
+});
 
+// Add a new user
+app.post('/api/users', async (req, res) => {
+  try {
+    const usersdata = await readData();
+    const newUser = { ...req.body, id: usersdata.length + 1 };
+    usersdata.push(newUser);
+    await writeData(usersdata);
+    res.status(201).json({ status: 'Success', id: newUser.id });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to write data' });
+  }
+});
 
-server.listen(port, ()=>{
-    console.log(`Server Started at Port : ${port}`)
-})
+// Update a user
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const usersdata = await readData();
+    const index = usersdata.findIndex((user) => user.id === id);
+
+    if (index !== -1) {
+      usersdata[index] = { ...usersdata[index], ...req.body, id };
+      await writeData(usersdata);
+      res.json({ status: 'Success', user: usersdata[index] });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update data' });
+  }
+});
+
+// Delete a user
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    let usersdata = await readData();
+    const initialLength = usersdata.length;
+    usersdata = usersdata.filter((user) => user.id !== id);
+
+    if (usersdata.length < initialLength) {
+      await writeData(usersdata);
+      res.json({ status: 'Success', message: 'User deleted' });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete data' });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server connected at port: ${port}`);
+});
